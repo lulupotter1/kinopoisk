@@ -40,14 +40,30 @@ class _MainScreenState extends State<MainScreen> {
       }
     });
     scrollController.addListener(() {
-      if (scrollController.offset == scrollController.position.maxScrollExtent &&
-          searchController.text.isNotEmpty &&
-          curPage <= Get.find<GetController>().maxPage) {
-        curPage++;
-        context.read<MainBloc>().add(MainEvent.getKino(
-              curPage: curPage,
-              name: searchController.text,
-            ));
+      if (scrollController.offset == scrollController.position.maxScrollExtent && searchController.text.isNotEmpty) {
+        if (curPage <= Get.find<GetController>().maxPage) {
+          curPage++;
+          context.read<MainBloc>().add(MainEvent.getKino(
+                curPage: curPage,
+                name: searchController.text,
+              ));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              elevation: 0,
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: ThemeColors.transparent,
+              padding: EdgeInsets.zero,
+              content: Container(
+                // alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                decoration: BoxDecoration(color: ThemeColors.white, borderRadius: BorderRadius.circular(40.r)),
+                child: Text(
+                  "Максимум страниц",
+                  textAlign: TextAlign.center,
+                  style: ThemeTextNotoSansRegular.size14.copyWith(color: ThemeColors.black),
+                ),
+              )));
+        }
       }
     });
     super.initState();
@@ -85,6 +101,8 @@ class _MainScreenState extends State<MainScreen> {
                         text: 'Поиск',
                         onTap: value
                             ? () {
+                                curPage = 1;
+                                firstTime = true;
                                 allKinoList.clear();
                                 focusNode.unfocus();
                                 context
@@ -128,6 +146,7 @@ class _MainScreenState extends State<MainScreen> {
                   loaded: (kinoList) {
                     showLoading = false;
                     firstTime = false;
+
                     allKinoList.addAll(kinoList);
                   },
                   loading: () {
@@ -146,6 +165,14 @@ class _MainScreenState extends State<MainScreen> {
                         const CircularProgressIndicator(
                           color: ThemeColors.yellow,
                         ),
+                      ],
+                      if (allKinoList.isEmpty && !firstTime && !showLoading) ...[
+                        SizedBox(height: 20.h),
+                        Text(
+                          "По запросу '${searchController.text}' ничего не найдено.",
+                          style: ThemeTextNotoSansSemiBold.size16,
+                          textAlign: TextAlign.center,
+                        )
                       ],
                       Expanded(
                         child: ListView.separated(
