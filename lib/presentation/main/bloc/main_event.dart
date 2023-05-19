@@ -1,0 +1,9 @@
+part of 'main_bloc.dart';
+
+@freezed
+class MainEvent with _$MainEvent {
+  const factory MainEvent.getKino({
+    required int curPage,
+    required String name,
+  }) = MainGetKino;
+}
